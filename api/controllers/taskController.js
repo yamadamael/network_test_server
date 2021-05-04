@@ -10,7 +10,6 @@ get_all_tasks = async function() {
     };
 };
 
-
 // 全てのタスクを取得する
 exports.all_tasks = async function(req, res) {
     const tasks = await get_all_tasks();
@@ -19,19 +18,16 @@ exports.all_tasks = async function(req, res) {
 
 // 新しいタスクを作成する
 exports.create_task = function(req, res) {
-    console.log(req);
     var new_task = new Task(req.body);
-    new_task.save(function(err, task) {
-        console.log(err);
-        console.log(task);
+    new_task.save(async function(err, task) {
         if (err) res.send(err);
-        res.json(task);
+        const tasks = await get_all_tasks();
+        res.json(tasks)
     });
 };
 
 // 特定のタスクを取得する
 exports.load_task = function(req, res) {
-    console.log(req);
     Task.findById(req.params.taskId, function(err, task) {
         if (err) res.send(err);
         res.json(task);
@@ -39,26 +35,27 @@ exports.load_task = function(req, res) {
 };
 
 // 特定のタスクを更新する
-exports.update_task = function(req, res) {
+exports.update_task = function (req, res) {
     Task.findOneAndUpdate(
-        { _id: req.params.taskId },
+        { _id: req.body.id },
         req.body,
         { new: true },
-        function(err, task) {
-            if (err) res.send(er);
-            res.json(task);
+        async function(err, task) {
+            if (err) res.send(err);
+            const tasks = await get_all_tasks();
+            res.json(tasks);
         }
     );
 };
 
 // 特定のタスクを削除する
 exports.delete_task = function(req, res) {
-    Task.remove(
-        { _id: req.params.taskId },
-        function(err, task) {
+    Task.findOneAndDelete(
+        { _id: req.body.id },
+        async function(err, task) {
             if (err) res.send(err);
-            res.json({ message: "Task successfully deleted" });
+            const tasks = await get_all_tasks();
+            res.json(tasks)
         }
     );
 };
-
